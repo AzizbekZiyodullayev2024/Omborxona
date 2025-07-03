@@ -30,9 +30,7 @@ return [
     |                    "redis", "dynamodb", "octane", "null"
     |
     */
-
     'stores' => [
-
         'array' => [
             'driver' => 'array',
             'serialize' => false,
