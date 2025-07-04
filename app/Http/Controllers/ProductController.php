@@ -31,8 +31,7 @@ class ProductController extends Controller
             return response()->json(['error' => 'Product not found'], 404);
         }
     }
-    public function store(Request $request): JsonResponse
-{
+    public function store(Request $request): JsonResponse{
     try {
         $validated = $request->validate([
             'name' => 'required|string|unique:products,name',
@@ -52,10 +51,10 @@ class ProductController extends Controller
                 Log::warning('Failed to store image file');
                 $data['image_url'] = null;
             }
-        } else {
-            Log::info('No image file provided in request');
-            $data['image_url'] = null;
-        }
+            } else {
+                Log::info('No image file provided in request');
+                $data['image_url'] = null;
+            }
 
         $product = Product::create($data);
         return response()->json(['message' => 'Product created', 'data' => $product], 201);
@@ -109,4 +108,5 @@ class ProductController extends Controller
             return response()->json(['error' => 'Product not found'], 404);
         }
     }
+
 }
