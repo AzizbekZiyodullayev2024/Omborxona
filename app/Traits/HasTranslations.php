@@ -15,12 +15,10 @@ trait HasTranslations
     //         }]);
     //     });
     // }
-
     public function getLocale(): string
     {
         return app()->getLocale();
     }
-
     // public function getTranslationsAttribute()
     // {
     //     return $this->translations()->get();

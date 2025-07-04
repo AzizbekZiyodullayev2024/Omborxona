@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Traits\FileUploadable;
+use App\Traits\HasFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -10,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 
 class ProductController extends Controller
 {
+    use HasFile;
     public function index(): JsonResponse
     {
         try {
@@ -31,41 +34,30 @@ class ProductController extends Controller
             return response()->json(['error' => 'Product not found'], 404);
         }
     }
-    public function store(Request $request): JsonResponse{
-    try {
-        $validated = $request->validate([
-            'name' => 'required|string|unique:products,name',
-            'description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // 2MB limit
-        ]);
 
-        $data = $validated;
+    public function store(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|unique:products,name',
+                'description' => 'nullable|string',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // 2MB limit
+            ]);
 
-        if ($request->hasFile('image')) {
-            Log::info('Image file detected: ' . $request->file('image')->getClientOriginalName());
-            $path = $request->file('image')->store('images', 'public');
-            if ($path) {
-                $data['image_url'] = Storage::url($path);
-                Log::info('Image stored at: ' . $data['image_url']);
-            } else {
-                Log::warning('Failed to store image file');
-                $data['image_url'] = null;
-            }
-            } else {
-                Log::info('No image file provided in request');
-                $data['image_url'] = null;
-            }
+            $data = $validated;
+            $data['image_url'] = $this->uploadFile($request, 'image', 'images');
 
-        $product = Product::create($data);
-        return response()->json(['message' => 'Product created', 'data' => $product], 201);
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        Log::error('Validation error: ' . json_encode($e->errors()));
-        return response()->json(['error' => $e->errors()], 422);
-    } catch (\Exception $e) {
-        Log::error('Error creating product: ' . $e->getMessage());
-        return response()->json(['error' => $e->getMessage()], 400);
+            $product = Product::create($data);
+            return response()->json(['message' => 'Mahsulot yaratildi', 'data' => $product], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validatsiya xatosi: ' . json_encode($e->errors()));
+            return response()->json(['error' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Mahsulot yaratishda xato: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
     }
-}
+
     public function update(Request $request, $id): JsonResponse
     {
         try {

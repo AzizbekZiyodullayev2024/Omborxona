@@ -7,10 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
-    // Register a new user
     public function register(Request $request)
     {
       $request->validate([
@@ -18,8 +18,8 @@ class AuthController extends Controller
         'last_name' => 'required',
         'username' => 'required',
         'email' => 'required',
-        'password' => 'required',
-        'role_id' => 'required', // role_id majburiy va roles jadvalida mavjud bo‘lishi kerak
+        'password_hash' => 'required',
+        'role_id' => 'required',
     ]);
 
         $user = User::create([
@@ -30,37 +30,41 @@ class AuthController extends Controller
             'email' => $request->email,
             'password_hash' => Hash::make($request->password),
         ]);
-
         $token = $user->createToken('auth_token')->plainTextToken;
-
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
         ]);
     }
 
-    public function login(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
+public function login(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
-        }
+    $credentials = $request->only('email', 'password');
 
+    if (Auth::attempt($credentials)) {
         $user = Auth::user();
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
-        ]);
+            'message' => 'Login successful'
+        ], 200);
     }
 
+    return response()->json([
+        'message' => 'Invalid credentials',
+        'errors' => [
+            'email' => ['Email or password_hash is incorrect']
+        ]
+    ], 401);
+}
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
