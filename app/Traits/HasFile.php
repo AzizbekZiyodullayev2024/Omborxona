@@ -29,33 +29,37 @@ trait HasFile
         return null;
     }
 
-    public function attachFiles(null|Request $request = null)
-    {
-        $request = getRequest($request);
 
-        if ($this->fileFields) {
-            foreach ($this->fileFields as $field) {
-                if ($request->file($field)) {
-                    $this->attachFile($field, $request);
-                }
-            }
-            $this->save();
-        }
-
-        return $this;
-    }
-
-    public function attachFile($field, null|Request $request = null)
+    public function attachFile($field, Request $request = null)
     {
         if ($request->file($field)) {
-            $fileName = Str::random(40) . '.' . $request->{$field}->getClientOriginalExtension();
+            $fileName = Str::random(40) . '.' . $request->{$field}->extension();
+
             $request->file($field)->storeAs($this->getTable(), $fileName);
+
             $this->deleteFile($field);
+
             $this->{$field} = $fileName;
         }
 
         return $this;
     }
+
+    // public function attachFiles(Request $request = null)
+    // {
+    //     $request = getRequest($request);
+
+    //     if ($this->fileFields) {
+    //         foreach ($this->fileFields as $field) {
+    //             if ($request->file($field)) {
+    //                 $this->attachFile($field, $request);
+    //             }
+    //         }
+    //         $this->save();
+    //     }
+
+    //     return $this;
+    // }
 
     public function deleteFile($field): void
     {
@@ -111,39 +115,37 @@ trait HasFile
             return asset('img/default-avatar.png');
         }
     }
+
     public function getImage($field)
     {
         $url = $this->{$field}
             ? asset('storage/' . $this->getTable() . '/' . $this->{$field})
             : null;
+
         if ($url && Storage::disk('public')->exists($this->getTable() . '/' . $this->{$field})) {
             return $url;
         } else {
             return asset('img/not_found.png');
         }
     }
+
+    public function fileExists($field)
+    {
+        return $this->{$field}
+            ? Storage::disk('public')->exists($this->getTable() . '/' . $this->{$field})
+            : null;
+    }
+
     public function getLogo($field)
     {
         $url = $this->{$field}
             ? asset('storage/' . $this->getTable() . '/' . $this->{$field})
             : null;
+
         if ($url && Storage::disk('public')->exists($this->getTable() . '/' . $this->{$field})) {
             return $url;
         } else {
             return asset('favicon.ico');
         }
     }
-    public function getStoragePath($field): ?string
-    {
-        if ($this->fileExists($field)) {
-            return Storage::disk('public')->path($this->getTable() . '/' . $this->{$field});
-        }
-        return null;
-    }
-
-    public function fileExists($field): bool
-    {
-        return $this->{$field} && Storage::disk('public')->exists($this->getTable() . '/' . $this->{$field});
-    }
-
 }

@@ -41,7 +41,6 @@ class UserController extends Controller
         if (!$user) {
             return response()->json(['message' => 'Foydalanuvchi topilmadi'], 404);
         }
-
         $validatedData = $request->validate([
             'role_id' => 'sometimes|required|exists:roles,id',
             'first_name' => 'nullable|string|max:255',

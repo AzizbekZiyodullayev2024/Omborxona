@@ -39,31 +39,31 @@ class AuthController extends Controller
 
 public function login(Request $request)
 {
-    $request->validate([
-        'email' => 'required',
-        'password' => 'required',
-    ]);
+    // $request->validate([
+    //     'email' => 'required',
+    //     'password' => 'required',
+    // ]);
 
-    $credentials = $request->only('email', 'password');
+    // $credentials = $request->only('email', 'password');
 
-    if (Auth::attempt($credentials)) {
-        $user = Auth::user();
+    // if (Auth::attempt($credentials)) {
+    //     $user = Auth::user();
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+    //     $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'message' => 'Login successful'
-        ], 200);
-    }
+    //     return response()->json([
+    //         'access_token' => $token,
+    //         'token_type' => 'Bearer',
+    //         'message' => 'Login successful'
+    //     ], 200);
+    // }
 
-    return response()->json([
-        'message' => 'Invalid credentials',
-        'errors' => [
-            'email' => ['Email or password_hash is incorrect']
-        ]
-    ], 401);
+    // return response()->json([
+    //     'message' => 'Invalid credentials',
+    //     'errors' => [
+    //         'email' => ['Email or password_hash is incorrect']
+    //     ]
+    // ], 401);
 }
     public function logout(Request $request)
     {
